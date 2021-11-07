@@ -51,3 +51,13 @@ python pacman.py -a evalFn=<evalFn>
 # For example
 python pacman.py -a evalFn=betterEvaluationFunction
 ```
+
+To skip the simulation time, run the following command:
+```bash
+packamn --frameTime 0
+```
+
+To fix the random seed, run the following command:
+```bash
+python pacman.py -f
+```
