@@ -333,11 +333,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             bestValue, bestAction = None, None
             print(state.getLegalActions(0))
             value = []
-            actions = state.getLegalActions(0)
-            p = 1 / len(actions)
             for action in state.getLegalActions(0):
                 #value = max(value,minValue(state.generateSuccessor(0, action), 1, 1))
-                succ = p * minValue(state.generateSuccessor(
+                succ = minValue(state.generateSuccessor(
                     0, action), 1, 1)
                 value.append(succ)
                 if bestValue is None:
