@@ -400,35 +400,54 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     #util.raiseNotDefined()
-    newPos = currentGameState.getPacmanPosition()
-    newFood = currentGameState.getFood()
-    newGhostStates = currentGameState.getGhostStates()
-    newCapsules = currentGameState.getCapsules()
-    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    pacmanPos = currentGameState.getPacmanPosition()
+    food = currentGameState.getFood()
+    foodList = food.asList()
+    ghostStates = currentGameState.getGhostStates()
+    capsules = currentGameState.getCapsules()
 
-    closestGhost = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
-    if newCapsules:
-        closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
-    else:
-        closestCapsule = 0
+    bias = 0
 
-    if closestCapsule:
-        closest_capsule = -3 / closestCapsule
-    else:
-        closest_capsule = 100
-
-    if closestGhost:
-        ghost_distance = -2 / closestGhost
-    else:
-        ghost_distance = -500
-
-    foodList = newFood.asList()
     if foodList:
-        closestFood = min([manhattanDistance(newPos, food) for food in foodList])
+        closestFood = min([manhattanDistance(pacmanPos, foodPos) for foodPos in foodList])
     else:
         closestFood = 0
 
-    return -2 * closestFood + ghost_distance - 10 * len(foodList) + closest_capsule
+    activeGhosts = [ghost for ghost in ghostStates if ghost.scaredTimer == 0]
+    scaredGhosts = [ghost for ghost in ghostStates if ghost.scaredTimer > 0]
+
+    if activeGhosts:
+        closestActiveGhost = min([manhattanDistance(pacmanPos, ghost.getPosition()) for ghost in activeGhosts])
+        if closestActiveGhost < 2:
+            closestActiveGhost = -1
+            bias = -10e10
+    else:
+        closestActiveGhost = -1
+
+    if scaredGhosts:
+        closestScaredGhost = min([manhattanDistance(pacmanPos, ghost.getPosition()) for ghost in scaredGhosts])
+    else:
+        closestScaredGhost = 0
+
+    closestGhostCount = len(list(filter(lambda x: manhattanDistance(x.getPosition(), pacmanPos) < 15, activeGhosts)))
+
+    if currentGameState.isWin():
+        bias = 10e10
+    if currentGameState.isLose():
+        bias = -10e10
+
+    params = [
+        (1, currentGameState.getScore()),
+        (-1.5, closestFood),
+        (-2, (1.0 / (closestActiveGhost))),
+        (-2, closestScaredGhost),
+        (-20, len(capsules)),
+        (-4, len(foodList)),
+        (-20, closestGhostCount),
+        (1, bias)
+    ]
+
+    return sum([param[0] * param[1] for param in params])
 
 # Abbreviation
 better = betterEvaluationFunction
